@@ -131,13 +131,54 @@ export default function Home() {
     const { error } = await supabase.rpc("party_admin_create_question", { p_token: adminToken, p_question: newQuestion.trim(), p_options: options, p_correct_index: correctIndex });
     setBusy(false);
     if (error) { setNotice(error.message); return; }
-    setNewQuestion(""); setNewOptions(["", "", "", ""]); setCorrectIndex(0);\n    const refreshed = await supabase.rpc("party_admin_list_questions", { p_token: adminToken });\n    if (refreshed.data) setAdminQuestions(refreshed.data as AdminQuestion[]);\n    setNotice("Question published to all players.");
+    setNewQuestion(""); setNewOptions(["", "", "", ""]); setCorrectIndex(0);
+    const refreshed = await supabase.rpc("party_admin_list_questions", { p_token: adminToken });
+    if (refreshed.data) setAdminQuestions(refreshed.data as AdminQuestion[]);
+    setNotice("Question published to all players.");
   }
 
-  async function toggleQuestion(question: Question) {
+  async function toggleQuestion(question: AdminQuestion) {
     if (!supabase || !adminToken) return;
     const { error } = await supabase.rpc("party_admin_set_question_published", { p_token: adminToken, p_question_id: question.id, p_published: !question.is_published });
+    if (!error) {
+      const refreshed = await supabase.rpc("party_admin_list_questions", { p_token: adminToken });
+      if (refreshed.data) setAdminQuestions(refreshed.data as AdminQuestion[]);
+    }
     setNotice(error ? error.message : "Question updated.");
+  }
+
+  async function deleteQuestion(question: AdminQuestion) {
+    if (!supabase || !adminToken || !window.confirm("Delete this question and its answer records?")) return;
+    const { error } = await supabase.rpc("party_admin_delete_question", { p_token: adminToken, p_question_id: question.id });
+    if (!error) {
+      const refreshed = await supabase.rpc("party_admin_list_questions", { p_token: adminToken });
+      if (refreshed.data) setAdminQuestions(refreshed.data as AdminQuestion[]);
+    }
+    setNotice(error ? error.message : "Question deleted.");
+  }
+
+  async function addScheduleItem() {
+    if (!supabase || !adminToken || !scheduleTitle.trim()) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("party_admin_add_schedule", {
+      p_token: adminToken,
+      p_title: scheduleTitle.trim(),
+      p_description: scheduleDescription.trim(),
+      p_starts_at: scheduleTime ? new Date(scheduleTime).toISOString() : null,
+      p_sort_order: schedule.length + 1
+    });
+    setBusy(false);
+    if (error) { setNotice(error.message); return; }
+    setScheduleTitle("");
+    setScheduleDescription("");
+    setScheduleTime("");
+    setNotice("Schedule item added.");
+  }
+
+  async function deleteScheduleItem(item: ScheduleItem) {
+    if (!supabase || !adminToken || !window.confirm("Delete this schedule item?")) return;
+    const { error } = await supabase.rpc("party_admin_delete_schedule", { p_token: adminToken, p_schedule_id: item.id });
+    setNotice(error ? error.message : "Schedule item deleted.");
   }
 
   function logoutPlayer() { sessionStorage.removeItem("party_player"); setPlayer(null); setView("home"); }
