@@ -44,6 +44,13 @@ export default function Home() {
   const sortedPlayers = useMemo(() => [...players].sort((a, b) => b.points - a.points || a.player_number - b.player_number), [players]);
 
   useEffect(() => {
+    if (!localStorage.getItem("party_install_alert_seen")) {
+      localStorage.setItem("party_install_alert_seen", "1");
+      window.alert("Install PARTY.exe on your device for quicker access. On your browser, open the menu and choose Install app or Add to Home Screen if available.");
+    }
+  }, []);
+
+  useEffect(() => {
     const saved = localStorage.getItem("party_player") || sessionStorage.getItem("party_player");
     if (saved) { try { const restored = JSON.parse(saved) as PlayerSession; setPlayer(restored); setView("player"); localStorage.setItem("party_player", saved); sessionStorage.removeItem("party_player"); } catch { localStorage.removeItem("party_player"); sessionStorage.removeItem("party_player"); } }
     const admin = sessionStorage.getItem("party_admin");
