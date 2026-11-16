@@ -186,7 +186,7 @@ export default function Home() {
 
   async function resetAllPartyData() {
     if (!supabase || !adminToken || busy) return;
-    const confirmation = window.prompt("This permanently deletes every player account except Tweety #1, all questions, all answers, and the entire schedule. Tweety's account and password stay, but his score resets to 0. Type DELETE ALL DATA to continue.");
+    const confirmation = window.prompt("This permanently deletes every player account except Tweety #1, all questions, and all answers. The event schedule is preserved. Tweety's account and password stay, but his score resets to 0. Type DELETE ALL DATA to continue.");
     if (confirmation !== "DELETE ALL DATA") { setNotice("Reset cancelled. No data was changed."); return; }
     setBusy(true);
     setNotice("");
@@ -196,10 +196,9 @@ export default function Home() {
     setPlayers((prev) => prev.filter((item) => item.player_number === 1 && item.display_name.toLowerCase() === "tweety").map((item) => ({ ...item, points: 0 })));
     setQuestions([]);
     setAdminQuestions([]);
-    setSchedule([]);
     setAnswers({});
     setPlayer((prev) => prev ? { ...prev, points: 0 } : prev);
-    setNotice("Reset complete. Tweety #1 was kept. " + (data?.deleted_players ?? 0) + " player accounts, " + (data?.deleted_questions ?? 0) + " questions, and " + (data?.deleted_schedule_items ?? 0) + " schedule items deleted. All answers were cleared.");
+    setNotice("Reset complete. Tweety #1 was kept. " + (data?.deleted_players ?? 0) + " player accounts, " + (data?.deleted_questions ?? 0) + " questions. The event schedule was preserved. All answers were cleared.");
   }
 
   async function loginPlayer() {
