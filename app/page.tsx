@@ -75,6 +75,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!player) return;
+    const latest = players.find((item) => item.id === player.player_id);
+    if (!latest) return;
+    setPlayer((prev) => prev ? { ...prev, player_number: latest.player_number, display_name: latest.display_name, points: latest.points } : prev);
+    const saved = localStorage.getItem("party_player");
+    if (saved) {
+      try {
+        const restored = JSON.parse(saved) as PlayerSession;
+        localStorage.setItem("party_player", JSON.stringify({ ...restored, player_number: latest.player_number, display_name: latest.display_name, points: latest.points }));
+      } catch {
+        localStorage.removeItem("party_player");
+      }
+    }
+  }, [players, player?.player_id]);
+
+  useEffect(() => {
     if (!supabase || !player) return;
     const loadAnswers = async () => {
       const { data } = await supabase!.rpc("party_get_player_answers", { p_player_id: player.player_id, p_session_token: player.session_token });
