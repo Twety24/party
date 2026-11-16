@@ -117,7 +117,7 @@ export default function Home() {
   async function setupAdmin() {
     if (!supabase || adminPin.length < 8) { setNotice("Choose a PIN with at least 8 characters."); return; }
     setBusy(true); setNotice("");
-    const { error } = await supabase.rpc("party_admin_setup", { p_setup_token: setupToken, p_pin: adminPin });
+    const { error } = await supabase.rpc("party_admin_setup", { p_setup_token: setupToken.trim(), p_pin: adminPin.trim() });
     setBusy(false);
     if (error) { setNotice(error.message); return; }
     await adminLogin();
